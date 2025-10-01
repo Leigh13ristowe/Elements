@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elements Quiz – Find Your Element</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e3f2fd, #ffffff); color: #222; margin: 0; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 10px; }
+  .card { background: #f9f9f9; border: 1px solid #ddd; padding: 20px; margin: 20px auto; border-radius: 14px; max-width: 850px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .q b { display: block; margin-bottom: 10px; font-size: 18px; }
+  label { display: block; padding: 10px; border-radius: 8px; margin: 8px 0; cursor: pointer; transition: all 0.2s ease; background: #fff; border: 1px solid #ddd; }
+  label:hover { background: #e3f2fd; }
+  input[type=radio] { margin-right: 10px; }
+  button { padding: 12px 20px; border: none; border-radius: 10px; margin: 10px; font-size: 16px; font-weight: bold; cursor: pointer; background: linear-gradient(90deg,#42a5f5,#1976d2); color: white; transition: 0.2s; }
+  button:hover { opacity: 0.9; }
+  .results { display: none; margin-top: 20px; text-align: center; }
+  .big { font-size: 40px; margin: 12px 0; font-weight: 700; }
+  .desc { color: #444; font-size: 18px; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h1>Elements Quiz – Find Your Element</h1>
+  <div class="card" id="quiz"></div>
+  <div style="text-align:center;">
+    <button id="submitBtn">See My Element</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+  <div class="card results" id="results">
+    <div id="winner" class="big"></div>
+    <div id="meaning" class="desc"></div>
+  </div>
+
+<script>
+const MAP = {
+  RED: {label:"🔥 Fire", desc:"Driven, intense, competitive. You go hard and push to win."},
+  YELLOW: {label:"⚡ Lightning", desc:"Fast, adaptive, high-energy. You react quickly and thrive on challenge."},
+  GREEN: {label:"🌍 Earth", desc:"Balanced, steady, supportive. You organise, stabilise, and keep the team grounded."},
+  BLUE: {label:"💧 Water", desc:"Emotional, intuitive, reflective. You value connection and depth."},
+  GREY: {label:"🌬️ Air", desc:"Analytical, calm, strategic. You plan, structure, and play the long game."}
+};
+
+const QUESTIONS = [
+{q:"1) How do you handle stress?",o:[
+{t:"A. I thrive under pressure and perform even better.",c:"YELLOW"},
+{t:"B. I retreat and need emotional space to recover.",c:"BLUE"},
+{t:"C. I break things down logically and solve them step by step.",c:"GREY"},
+{t:"D. I stay grounded by seeking balance and social support.",c:"GREEN"},
+{t:"E. I carefully analyze and plan my choices.",c:"RED"}]},
+{q:"2) What’s your ideal workout?",o:[
+{t:"A. A long, structured endurance session with precise tracking.",c:"GREY"},
+{t:"B. Explosive, heavy lifting or sprinting—full power, all the time.",c:"RED"},
+{t:"C. A balanced routine with strength, mobility, and endurance.",c:"GREEN"},
+{t:"D. Controlled, focused exercises with a strong mind-muscle connection.",c:"BLUE"},
+{t:"E. Fast, skill-based, high-intensity movement that keeps me engaged.",c:"YELLOW"}]},
+{q:"3) How do you respond to competition?",o:[
+{t:"A. I strategize carefully to outthink my opponents.",c:"GREY"},
+{t:"B. I must dominate and prove I’m the best.",c:"RED"},
+{t:"C. I enjoy competition but also value teamwork.",c:"GREEN"},
+{t:"D. I prefer competing with myself rather than others.",c:"BLUE"},
+{t:"E. I react quickly to outmaneuver others.",c:"YELLOW"}]},
+{q:"4) What environment makes you feel most alive?",o:[
+{t:"A. A dynamic, constantly changing environment that challenges my adaptability.",c:"YELLOW"},
+{t:"B. A peaceful and introspective environment that allows deep reflection.",c:"BLUE"},
+{t:"C. A structured, orderly space where everything is well-planned.",c:"GREY"},
+{t:"D. A fast-paced, high-pressure setting where I can take charge.",c:"RED"},
+{t:"E. A friendly, interactive, and supportive space.",c:"GREEN"}]},
+{q:"5) How do you approach high-risk situations?",o:[
+{t:"A. I jump in without hesitation—high risk, high reward.",c:"RED"},
+{t:"B. I react fast, assessing the situation instantly and adjusting.",c:"YELLOW"},
+{t:"C. I analyze every possible outcome before deciding.",c:"GREY"},
+{t:"D. I weigh the risks and choose the safest, most balanced option.",c:"GREEN"},
+{t:"E. I avoid unnecessary risks and prefer careful control.",c:"BLUE"}]},
+{q:"6) What’s your decision-making style?",o:[
+{t:"A. Quick and instinctual—I act immediately.",c:"YELLOW"},
+{t:"B. Fast but calculated—I react and adjust to stay ahead.",c:"RED"},
+{t:"C. I consider all perspectives before deciding.",c:"GREEN"},
+{t:"D. I follow my emotions and intuition.",c:"BLUE"},
+{t:"E. I carefully analyze and plan my choices.",c:"GREY"}]},
+{q:"7) What kind of entertainment do you prefer?",o:[
+{t:"A. Fast-paced, skill-driven sports or challenges.",c:"YELLOW"},
+{t:"B. Action-packed movies, extreme sports, or thrillers.",c:"RED"},
+{t:"C. Artistic, musical, or deeply emotional stories.",c:"BLUE"},
+{t:"D. Social activities, adventure, or variety shows.",c:"GREEN"},
+{t:"E. Strategy games, puzzles, or documentaries.",c:"GREY"}]},
+{q:"8) How do you prefer to recover after a workout?",o:[
+{t:"A. I don’t! I just go again.",c:"RED"},
+{t:"B. A quick recovery session before moving on.",c:"YELLOW"},
+{t:"C. Yoga, stretching, or deep relaxation.",c:"BLUE"},
+{t:"D. A balance of rest and light movement.",c:"GREEN"},
+{t:"E. A structured recovery routine with precise tracking.",c:"GREY"}]},
+{q:"9) What type of mindset do you naturally have?",o:[
+{t:"A. A growth mindset—I take everything as a learning experience.",c:"GREEN"},
+{t:"B. A strategic mindset—I calculate and think long-term.",c:"GREY"},
+{t:"C. A winner’s mentality—I must dominate.",c:"RED"},
+{t:"D. A high-performance mindset—I adapt and take advantage of any situation.",c:"YELLOW"},
+{t:"E. An emotional mindset—I follow what feels right.",c:"BLUE"}]},
+{q:"10) What is your biggest strength?",o:[
+{t:"A. My speed, adaptability, and reaction time.",c:"YELLOW"},
+{t:"B. My ability to connect with and understand people.",c:"GREEN"},
+{t:"C. My logic, planning, and consistency.",c:"GREY"},
+{t:"D. My drive and intensity.",c:"RED"},
+{t:"E. My emotional depth and intuition.",c:"BLUE"}]},
+{q:"11) How do you handle failure?",o:[
+{t:"A. I push myself harder and use failure as a lesson to improve.",c:"YELLOW"},
+{t:"B. I get angry but use it to fuel me.",c:"RED"},
+{t:"C. I seek feedback and adjust based on what I learned.",c:"GREY"},
+{t:"D. It really affects me emotionally, but I try to move on.",c:"BLUE"},
+{t:"E. I analyze exactly what went wrong and correct it.",c:"GREEN"}]},
+{q:"12) What do you value most in life?",o:[
+{t:"A. Mastery and proving myself through skill.",c:"RED"},
+{t:"B. Meaning and self-expression.",c:"BLUE"},
+{t:"C. Knowledge and structure.",c:"GREY"},
+{t:"D. Relationships and connection.",c:"GREEN"},
+{t:"E. Success and achievement.",c:"YELLOW"}]},
+{q:"13) How do you relax?",o:[
+{t:"A. I need something active to burn off energy.",c:"YELLOW"},
+{t:"B. I do something engaging, exciting, or competitive.",c:"RED"},
+{t:"C. I prefer peaceful, calming activities like music or art.",c:"BLUE"},
+{t:"D. I unwind with structure, like reading or solving problems.",c:"GREY"},
+{t:"E. I relax with people I enjoy being around.",c:"GREEN"}]},
+{q:"14) What describes your emotional state most often?",o:[
+{t:"A. Confident, energetic, and always ready for action.",c:"YELLOW"},
+{t:"B. Thoughtful and analytical.",c:"GREY"},
+{t:"C. Intense and passionate.",c:"RED"},
+{t:"D. Deeply emotional and reflective.",c:"BLUE"},
+{t:"E. Stable and easygoing.",c:"GREEN"}]},
+{q:"15) How do you see yourself in a team setting?",o:[
+{t:"A. The strategist and planner.",c:"GREY"},
+{t:"B. The leader, pushing everyone to win.",c:"RED"},
+{t:"C. The energetic playmaker who steps up when it matters most.",c:"YELLOW"},
+{t:"D. The reliable, adaptable, and supportive member.",c:"GREEN"},
+{t:"E. The emotional support and motivator.",c:"BLUE"}]},
+{q:"16) What’s your training mindset?",o:[
+{t:"A. Train with strict plans and measured progress.",c:"GREY"},
+{t:"B. Train to dominate through speed, skill, and power.",c:"RED"},
+{t:"C. Train for control, feeling, and longevity.",c:"BLUE"},
+{t:"D. Train consistently and stay balanced.",c:"GREEN"},
+{t:"E. Go hard or go home!",c:"YELLOW"}]},
+{q:"17) How do you react to unexpected challenges?",o:[
+{t:"A. I power through them head-on.",c:"RED"},
+{t:"B. I adapt instantly and use my skills to adjust.",c:"YELLOW"},
+{t:"C. I keep my cool and assess the situation before reacting.",c:"GREY"},
+{t:"D. I take my time to emotionally process it before moving forward.",c:"BLUE"},
+{t:"E. I analyze all possible outcomes and develop a strategy.",c:"GREEN"}]},
+{q:"18) What’s your approach to winning?",o:[
+{t:"A. Dominate and overpower my opponents.",c:"RED"},
+{t:"B. Outsmart and outmaneuver them with speed.",c:"YELLOW"},
+{t:"C. Play fair and maintain balance.",c:"GREEN"},
+{t:"D. Follow what feels right to me.",c:"BLUE"},
+{t:"E. Plan ahead and execute flawlessly.",c:"GREY"}]},
+{q:"19) What’s your ideal way to spend free time?",o:[
+{t:"A. Pushing myself to my limits.",c:"RED"},
+{t:"B. Trying something new and exciting.",c:"YELLOW"},
+{t:"C. Engaging in deep conversations with friends.",c:"GREEN"},
+{t:"D. Reflecting on personal growth.",c:"BLUE"},
+{t:"E. Learning or working on a personal project.",c:"GREY"}]},
+{q:"20) How do you respond to setbacks?",o:[
+{t:"A. I adjust and quickly move forward.",c:"YELLOW"},
+{t:"B. I keep pushing until I overcome it.",c:"RED"},
+{t:"C. I analyze and plan my next move carefully.",c:"GREY"},
+{t:"D. I take my time to recover emotionally.",c:"BLUE"},
+{t:"E. I seek support and find a way to improve.",c:"GREEN"}]},
+{q:"21) What’s your training style?",o:[
+{t:"A. Intense — I go all out until I’m spent.",c:"RED"},
+{t:"B. Fast — I like short, explosive sessions.",c:"YELLOW"},
+{t:"C. Controlled — I focus on breathing and steady movement.",c:"BLUE"},
+{t:"D. Consistent — I show up and do the work, no matter what.",c:"GREEN"},
+{t:"E. Structured — I like planned routines and programs.",c:"GREY"}]}
+];
+
+// Render quiz
+const quiz = document.getElementById('quiz');
+QUESTIONS.forEach((q,i)=>{
+  const box = document.createElement('div');
+  box.className='q';
+  let html = `<b>${q.q}</b>`;
+  q.o.forEach(opt=>{
+    html += `<label><input type="radio" name="q${i}" value="${opt.c}"> ${opt.t}</label>`;
+  });
+  box.innerHTML = html;
+  quiz.appendChild(box);
+});
+
+// Submit
+document.getElementById('submitBtn').addEventListener('click', ()=>{
+  const selected = document.querySelectorAll('input[type=radio]:checked');
+  if(selected.length < QUESTIONS.length){ 
+    alert("Please answer all questions."); 
+    return; 
+  }
+  const tally = {RED:0,YELLOW:0,BLUE:0,GREEN:0,GREY:0};
+  selected.forEach(el=>{ tally[el.value]++; });
+
+  // Tie-breaker → default Earth if all equal
+  const values = Object.values(tally);
+  const allEqual = values.every(v => v === values[0]);
+  let winner;
+  if(allEqual) {
+    winner = "GREEN";
+  } else {
+    winner = Object.keys(tally).reduce((a,b)=> tally[a] >= tally[b] ? a : b );
+  }
+
+  const w = MAP[winner];
+  document.getElementById('winner').innerHTML = w.label;
+  document.getElementById('meaning').textContent = w.desc;
+  document.getElementById('results').style.display = 'block';
+});
+
+// Reset
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  document.querySelectorAll('input[type=radio]:checked').forEach(el=> el.checked=false);
+  document.getElementById('results').style.display='none';
+});
+</script>
+</body>
+</html>
